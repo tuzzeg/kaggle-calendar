@@ -1,21 +1,12 @@
 import os.path
-import urllib2
+import urlparse
 from collections import namedtuple
 from bs4 import BeautifulSoup
+from httpcache import CachedHttp
 
-url = "http://www.kaggle.com/competitions/search?SearchVisibility=AllCompetitions&ShowActive=true&ShowCompleted=true&ShowProspect=true&ShowOpenToAll=true&ShowPrivate=true&ShowLimited=true"
+httpCache = 'd/html.kch'
 
-def readHtml(url, cacheFile=None):
-  if not cacheFile is None and os.path.isfile(cacheFile):
-    with open(cacheFile) as f:
-      return f.read()
-
-  resp = urllib2.urlopen(url)
-  html = resp.read()
-  if not cacheFile is None:
-    with open(cacheFile, 'w+') as f:
-      f.write(html)
-  return html
+allCompetitionsUrl = "http://www.kaggle.com/competitions/search?SearchVisibility=AllCompetitions&ShowActive=true&ShowCompleted=true&ShowProspect=true&ShowOpenToAll=true&ShowPrivate=true&ShowLimited=true"
 
 Competition = namedtuple('Competetion', ['url'])
 def extractCompetitions(html):
@@ -25,10 +16,49 @@ def extractCompetitions(html):
     el_p_a = el_p.find('a')
     yield Competition(url=el_p_a['href'])
 
-def main():
-  html = readHtml(url, 'competition.html')
+def printCompetitions(http):
+  html = http.get(allCompetitionsUrl)
   for c in extractCompetitions(html):
-    print c
+    url = urlparse.urljoin('http://kaggle.com', c.url)
+    print url
+    #html = http.get(url)
+    #print html
+
+def parseCompetition(http, url):
+  html = http.get(url)
+  doc = BeautifulSoup(html)
+
+  for el in doc.body.find_all('p', attrs={'id': 'end-time-note'}):
+    print el.text
+
+class ReFactory(object):
+  def __init__(self, **kw):
+    pass
+
+  def build(self, pattern):
+    pass
+
+# 1:42 pm, Monday 23 May 2011 UTC
+_reF = ReFactory(
+  D2='[0-9]{,2}',
+  D4='[0-9]{,4}',
+  AM='(pm|am)',
+  WEEKDAYS='(monday|tuesday|wednesday|thursday|friday|saturday|sunday)',
+  MONTHS='(january|february|march|april|may|june|july|august|september|october|november|october|december)'
+)
+def findDates(text):
+  # 1:42 pm, Monday 23 May 2011 UTC
+  _re = reF.build('(started|ended): (<D2>:<D2> <AM>, <MONTHS> <D2> <MONTHS> <D4> UTC)')
+  for m in re.find(text):
+    print m
+
+def main():
+  http = CachedHttp(httpCache)
+
+  # printCompetitions(http)
+
+  parseCompetition(http, 'http://www.kaggle.com/c/mdm')
+
 
 if __name__ == '__main__':
   main()
