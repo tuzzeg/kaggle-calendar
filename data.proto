@@ -1,0 +1,14 @@
+package kaggle;
+
+message Competition {
+  required string id = 1;
+  optional string title = 2;
+  optional string url = 3;
+
+  optional Date start = 4;
+  optional Date end = 5;
+}
+
+message Date {
+  optional int64 timestamp_utc = 1;
+}
