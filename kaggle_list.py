@@ -58,12 +58,17 @@ def updateCompetition(html, competition):
 
 def _updateCompetitionTitle(doc, competition):
   el = doc.body.find('div', attrs={'id': 'comp-header-details'})
+  if not el:
+    return
   el_h1 = el.find('h1')
-  if el_h1:
-    competition.title = el_h1.text.strip()
+  if not el_h1:
+    return
+  competition.title = el_h1.text.strip()
 
 def _updateCompetitionDates(doc, competition):
   el = doc.body.find('p', attrs={'id': 'end-time-note'})
+  if not el:
+    return
   dates = dict(extractDates(el.text))
 
   if 'started' in dates:
