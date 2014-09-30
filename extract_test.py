@@ -24,6 +24,16 @@ class ExtractorTest(unittest.TestCase):
     self.assertDate('Mon, 23 May 2011 13:42:00 +0000', c.start)
     self.assertDate('Thu, 18 Aug 2011 00:00:00 +0000', c.end)
 
+  def test_extract_overfitting(self):
+    html = readFile('test/comp_overfitting.html')
+    c = Competition(id='/c/overfitting')
+
+    updateCompetition(html, c)
+
+    self.assertEquals('Don\'t Overfit!', c.title)
+    self.assertDate('Mon, 28 Feb 2011 00:00:00 +0000', c.start)
+    self.assertDate('Sun, 15 May 2011 00:00:00 +0000', c.end)
+
   def test_extract_dates(self):
     dates = extractDates('''Started: 1:42 pm, Monday 23 May 2011 UTC
       Ended: 12:00 am, Thursday 18 August 2011 UTC (86 total days)''')
