@@ -45,7 +45,7 @@ _reF = ReFactory(
 )
 def extractDates(text):
   # 1:42 pm, Monday 23 May 2011 UTC
-  _re = _reF.build('(started|ended): (<D2>:<D2> <AM>, <WEEKDAYS> <D2> <MONTHS> <D4> UTC)')
+  _re = _reF.build('(started|ended|ends): (<D2>:<D2> <AM>, <WEEKDAYS> <D2> <MONTHS> <D4> UTC)')
   for typ, dateStr in _re.findall(text):
     date = datetime.strptime(dateStr, '%I:%M %p, %A %d %B %Y %Z')
     yield (typ.lower(), date)
@@ -75,6 +75,8 @@ def _updateCompetitionDates(doc, competition):
     _setDate(competition.start, dates['started'])
   if 'ended' in dates:
     _setDate(competition.end, dates['ended'])
+  if 'ends' in dates:
+    _setDate(competition.end, dates['ends'])
 
 def _setDate(proto, dt):
   proto.timestamp_utc = calendar.timegm(dt.utctimetuple())

@@ -34,6 +34,18 @@ class ExtractorTest(unittest.TestCase):
     self.assertDate('Mon, 28 Feb 2011 00:00:00 +0000', c.start)
     self.assertDate('Sun, 15 May 2011 00:00:00 +0000', c.end)
 
+  def test_extract_sentiment(self):
+    html = readFile('test/comp_sentiment.html')
+    c = Competition(id='/c/sentiment-analysis-on-movie-reviews')
+
+    updateCompetition(html, c)
+
+    self.assertEquals('Sentiment Analysis on Movie Reviews', c.title)
+    self.assertTrue(c.HasField('start'))
+    self.assertTrue(c.HasField('end'))
+    self.assertDate('Fri, 28 Feb 2014 16:54:00 +0000', c.start)
+    self.assertDate('Sat, 28 Feb 2015 23:59:00 +0000', c.end)
+
   def test_extract_dates(self):
     dates = extractDates('''Started: 1:42 pm, Monday 23 May 2011 UTC
       Ended: 12:00 am, Thursday 18 August 2011 UTC (86 total days)''')
