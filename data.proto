@@ -12,3 +12,23 @@ message Competition {
 message Date {
   optional int64 timestamp_utc = 1;
 }
+
+message CalendarSyncerConfig {
+  message ServiceAccount {
+    optional string email = 1;
+    optional string keysFile = 2;
+  }
+
+  message Authentication {
+    optional string developersKey = 1;
+    optional ServiceAccount serviceAccount = 2;
+  }
+
+  message Target {
+    optional string email = 1;
+    optional string calendarId = 2;
+  }
+
+  optional Authentication authentication = 1;
+  optional Target target = 2;
+}
