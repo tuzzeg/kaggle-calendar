@@ -92,8 +92,8 @@ def _event(competition):
     'start': _jsonTime(competition.start),
     'end': _jsonTime(competition.end),
     'source': {
-      "title": competition.title,
-      "url": competition.url,
+      'title': competition.title,
+      'url': competition.url,
     },
   }
   return event
