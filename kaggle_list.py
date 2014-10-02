@@ -54,7 +54,10 @@ def updateCompetition(html, competition):
   doc = BeautifulSoup(html)
 
   _updateCompetitionTitle(doc, competition)
+  _updateCompetitionDescription(doc, competition)
   _updateCompetitionDates(doc, competition)
+  _updateCompetitionAttributes(doc, competition)
+  _updateCompetitionLimited(doc, competition)
 
 def _updateCompetitionTitle(doc, competition):
   el = doc.body.find('div', attrs={'id': 'comp-header-details'})
@@ -64,6 +67,32 @@ def _updateCompetitionTitle(doc, competition):
   if not el_h1:
     return
   competition.title = el_h1.text.strip()
+
+def _updateCompetitionDescription(doc, competition):
+  el = doc.body.find('h1', attrs={'class': 'page-name'})
+  if not el:
+    return
+  competition.description = el.text.strip()
+
+def _updateCompetitionAttributes(doc, competition):
+  el = doc.body.find('div', attrs={'id': 'comp-header-details'})
+  if not el:
+    return
+  el_h2 = el.find('h2')
+  if not el_h2:
+    return
+  attrs = el_h2.text
+
+  reward = re.findall('\$\\b([0-9,]+)\\b', attrs, re.I)
+  if len(reward) == 1:
+    competition.reward_usd = int(reward[0].replace(',', ''))
+  if re.search('(kudos|knowledge)', attrs, re.I):
+    competition.attributes.append(Competition.KNOWLEDGE)
+
+def _updateCompetitionLimited(doc, competition):
+  el = doc.body.find('div', attrs={'id': 'limited-notice'})
+  if el:
+    competition.attributes.add(Competition.LIMITED)
 
 def _updateCompetitionDates(doc, competition):
   el = doc.body.find('p', attrs={'id': 'end-time-note'})

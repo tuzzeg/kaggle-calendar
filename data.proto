@@ -3,10 +3,19 @@ package kaggle;
 message Competition {
   required string id = 1;
   optional string title = 2;
+  optional string description = 6;
   optional string url = 3;
 
   optional Date start = 4;
   optional Date end = 5;
+
+  enum Attribute {
+    KNOWLEDGE = 1;
+    LIMITED = 2;
+  }
+
+  repeated Attribute attributes = 7;
+  optional int32 reward_usd = 8;
 }
 
 message Date {
