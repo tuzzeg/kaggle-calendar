@@ -94,7 +94,7 @@ def _updateCompetitionAttributes(doc, competition):
 def _updateCompetitionLimited(doc, competition):
   el = doc.body.find('div', attrs={'id': 'limited-notice'})
   if el:
-    competition.attributes.add(Competition.LIMITED)
+    competition.attributes.append(Competition.LIMITED)
 
 def _updateCompetitionDates(doc, competition):
   el = doc.body.find('p', attrs={'id': 'end-time-note'})
