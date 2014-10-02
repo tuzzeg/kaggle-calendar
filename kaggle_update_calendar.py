@@ -13,7 +13,7 @@ from oauth2client import tools
 from data_pb2 import Competition, Date, CalendarSyncerConfig
 
 import httplib2
-httplib2.debuglevel=4
+# httplib2.debuglevel=4
 
 def main():
   conf = _loadConf('d/conf.pb')
@@ -89,6 +89,7 @@ def _event(competition):
   event = {
     'id': _eventId(competition),
     'summary': competition.title,
+    'description': competition.description,
     'start': _jsonTime(competition.start),
     'end': _jsonTime(competition.end),
     'source': {
