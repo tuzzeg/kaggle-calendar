@@ -1,8 +1,8 @@
 import unittest
-from kaggle_list import extractCompetitions, updateCompetition, extractDates
+import time
+from extract import extractCompetitions, updateCompetition, extractDates
 from data_pb2 import Competition
 from datetime import datetime
-import time
 
 class ExtractorTest(unittest.TestCase):
   def test_extract_list(self):

@@ -1,28 +1,13 @@
-import os.path
-import urlparse
-from collections import namedtuple
-from bs4 import BeautifulSoup
-from httpcache import CachedHttp
 import re
+import urlparse
+import calendar
+from bs4 import BeautifulSoup
 from datetime import datetime
 from data_pb2 import Competition, Date
-import calendar
-
-httpCache = 'd/html.kch'
-
-allCompetitionsUrl = "http://www.kaggle.com/competitions/search?SearchVisibility=AllCompetitions&ShowActive=true&ShowCompleted=true&ShowProspect=true&ShowOpenToAll=true&ShowPrivate=true&ShowLimited=true"
-
-def extractCompetitions(html):
-  doc = BeautifulSoup(html)
-  for el in doc.body.find_all('div', attrs={'class': 'competition-details'}):
-    el_p = el.find('p', attrs={'class': 'competition-summary'})
-    el_p_a = el_p.find('a')
-
-    id = el_p_a['href']
-    url = urlparse.urljoin('http://kaggle.com', id)
-    yield Competition(id=id, url=url)
 
 class ReFactory(object):
+  '''Build regex defined in grammar-like fashion.'''
+
   def __init__(self, terminals):
     self._terminals = terminals
 
@@ -32,6 +17,17 @@ class ReFactory(object):
   def _expand(self, pattern):
     _re = re.compile('<([^>]*)>', re.I)
     return _re.sub(lambda m: self._terminals.get(m.group(1), m.group()), pattern)
+
+def extractCompetitions(html):
+  '''Extract competition from kaggle.com/competitions page.'''
+  doc = BeautifulSoup(html)
+  for el in doc.body.find_all('div', attrs={'class': 'competition-details'}):
+    el_p = el.find('p', attrs={'class': 'competition-summary'})
+    el_p_a = el_p.find('a')
+
+    id = el_p_a['href']
+    url = urlparse.urljoin('http://kaggle.com', id)
+    yield Competition(id=id, url=url)
 
 # 1:42 pm, Monday 23 May 2011 UTC
 _reF = ReFactory(
@@ -51,6 +47,12 @@ def extractDates(text):
     yield (typ.lower(), date)
 
 def updateCompetition(html, competition):
+  '''
+  Parse competition page and extract such information as
+  - Title, description
+  - Reward ($$)
+  - Competition type (knowledge, limited)
+  '''
   doc = BeautifulSoup(html)
 
   _updateCompetitionTitle(doc, competition)
@@ -109,25 +111,3 @@ def _updateCompetitionDates(doc, competition):
 
 def _setDate(proto, dt):
   proto.timestamp_utc = calendar.timegm(dt.utctimetuple())
-
-def _dumpCompetitions(http):
-  html = http.get(allCompetitionsUrl)
-  for c in extractCompetitions(html):
-    print c
-
-def _dumpCompetition(http, url):
-  html = http.get(url)
-
-  c = Competition(id='1')
-  updateCompetition(html, c)
-
-  print c
-
-def main():
-  http = CachedHttp(httpCache)
-
-  # _dumpCompetitions(http)
-  _dumpCompetition(http, 'http://www.kaggle.com/c/mdm')
-
-if __name__ == '__main__':
-  main()

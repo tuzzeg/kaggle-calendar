@@ -1,6 +1,6 @@
 import sqlite3
 from httpcache import CachedHttp
-from kaggle_list import extractCompetitions, updateCompetition
+from extract import extractCompetitions, updateCompetition
 
 httpCache = 'd/html.kch'
 

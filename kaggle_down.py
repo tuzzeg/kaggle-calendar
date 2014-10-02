@@ -1,5 +1,5 @@
 from httpcache import CachedHttp
-from kaggle_list import extractCompetitions
+from extract import extractCompetitions
 import time
 
 httpCache = 'd/html.kch'
