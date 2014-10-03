@@ -1,6 +1,9 @@
 import sqlite3
+import logging
 from httpcache import CachedHttp
 from extract import extractCompetitions, updateCompetition
+
+logger = logging.getLogger(__name__)
 
 httpCache = 'd/html.kch'
 
@@ -21,19 +24,19 @@ def _updateCompetition(html, cn, competition):
   rows = cn.execute('select id, title, blob from competitions where id == :id', {'id': competition.id})
   rows = list(rows)
   if len(rows) < 1:
-    print '  [%s] insert' % competition.id
+    logger.debug('  [%s] insert' % competition.id)
     cn.execute(
         'insert into competitions (id, title, blob) values (:id, :title, :blob)',
         {'id': competition.id, 'title': competition.title, 'blob': _blob(competition)})
   else:
     row = rows[0]
     if _blob(competition) != row[2]:
-      print '  [%s] update' % competition.id
+      logger.debug('  [%s] update' % competition.id)
       cn.execute(
           'update competitions set title=:title, blob=:blob where id=:id',
           {'id': competition.id, 'title': competition.title, 'blob': _blob(competition)})
     else:
-      print '  [%s] no change' % competition.id
+      logger.debug('  [%s] no change' % competition.id)
 
 def _blob(competition):
   return sqlite3.Binary(competition.SerializeToString())
@@ -44,4 +47,5 @@ def main():
   updateSqlite(http, sqliteFile)
 
 if __name__ == '__main__':
+  logging.basicConfig(level=logging.DEBUG)
   main()

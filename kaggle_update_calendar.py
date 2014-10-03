@@ -2,6 +2,7 @@ import argparse
 import sqlite3
 import base64
 import time
+import logging
 from google.protobuf import text_format
 
 from apiclient.discovery import build
@@ -14,6 +15,8 @@ from data_pb2 import Competition, Date, CalendarSyncerConfig
 
 import httplib2
 # httplib2.debuglevel=4
+
+logger = logging.getLogger(__name__)
 
 def main():
   conf = _loadConf('d/conf.pb')
@@ -38,9 +41,7 @@ class CalendarSyncer(object):
     credentials = SignedJwtAssertionCredentials(
       conf.authentication.serviceAccount.email,
       key,
-      scope='https://www.googleapis.com/auth/calendar',
-      sub=conf.target.email)
-    credentials.refresh(http)
+      scope='https://www.googleapis.com/auth/calendar')
     http = credentials.authorize(http)
 
     self._service = build(
@@ -63,13 +64,13 @@ class CalendarSyncer(object):
     try:
       event = self._service.events().get(calendarId=calendarId, eventId=eventId).execute()
       if _match(competition, event):
-        print '  [%s] no upate' % (competition.id)
+        logger.debug('[%s] no upate' % (competition.id))
       else:
-        print '  [%s] update' % (competition.id)
+        logger.debug('  [%s] update' % (competition.id))
         self._updateEvent(competition)
     except HttpError, e:
       if e.resp.status == 404:
-        print '  [%s] insert' % (competition.id)
+        logger.debug('  [%s] insert' % (competition.id))
         self._addEvent(competition)
       else:
         raise e
@@ -118,4 +119,5 @@ def _loadConf(confFile):
     return conf
 
 if __name__ == '__main__':
+  logging.basicConfig(level=logging.DEBUG)
   main()

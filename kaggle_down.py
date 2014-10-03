@@ -1,6 +1,9 @@
 from httpcache import CachedHttp
 from extract import extractCompetitions
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 httpCache = 'd/html.kch'
 
@@ -17,7 +20,7 @@ def downloadCompetitions(http):
     while time.time()-t0 < downloadTimeoutSec:
       time.sleep(0.1)
 
-    print '  download [%s]' % c.url
+    logger.debug('  download [%s]' % c.url)
     http.get(c.url)
 
 def main():
@@ -25,4 +28,5 @@ def main():
   downloadCompetitions(http)
 
 if __name__ == '__main__':
+  logging.basicConfig(level=logging.DEBUG)
   main()
