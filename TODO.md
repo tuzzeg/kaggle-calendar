@@ -8,3 +8,9 @@
   - sync with sqlite
 - KaggleCalendarUpdater
   - add new events, update existing (if changed)
+- Generate iCal
+- Launch
+  - Special account
+  - Static site
+  - Run downloader, updater periodically
+  - Alerts if upload/sync/download stalled
