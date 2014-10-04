@@ -1,32 +1,39 @@
-from httpcache import CachedHttp
+from cmd import Command
 from extract import extractCompetitions
-import time
+from httpcache import FetchStorage
+from functools import partial
+import cmd
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
-httpCache = 'd/html.kch'
-
-allCompetitionsUrl = "http://www.kaggle.com/competitions/search?SearchVisibility=AllCompetitions&ShowActive=true&ShowCompleted=true&ShowProspect=true&ShowOpenToAll=true&ShowPrivate=true&ShowLimited=true"
-
 downloadTimeoutSec = 1
 
-def downloadCompetitions(http):
-  html = http.get(allCompetitionsUrl)
+HOUR=3600
+WEEK=7*24*HOUR
+
+def updateDownloads(conf):
+  allCompetitionsUrl = conf.downloaderConfig.competitionsUrl
+  storage = FetchStorage(conf.downloaderConfig.storageFile)
+
+  page = storage.get(allCompetitionsUrl, forceAfter=HOUR)
 
   # we don't want to be banned by Kaggle, make 1 request per second
   t0 = time.time()
-  for c in extractCompetitions(html):
+  for c in extractCompetitions(page.contents):
     while time.time()-t0 < downloadTimeoutSec:
       time.sleep(0.1)
 
-    logger.debug('  download [%s]' % c.url)
-    http.get(c.url)
+    logger.debug('download [%s]' % c.url)
+    storage.get(c.url, forceAfter=WEEK)
 
-def main():
-  http = CachedHttp(httpCache)
-  downloadCompetitions(http)
+def fetchAll(command, args, conf):
+  updateDownloads(conf)
+
+commands = {
+  'fetch-all': partial(Command, fetchAll)
+}
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.DEBUG)
-  main()
+  cmd.main(commands)

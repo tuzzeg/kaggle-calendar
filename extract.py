@@ -26,7 +26,7 @@ def extractCompetitions(html):
     el_p_a = el_p.find('a')
 
     id = el_p_a['href']
-    url = urlparse.urljoin('http://kaggle.com', id)
+    url = urlparse.urljoin('http://www.kaggle.com', id)
     yield Competition(id=id, url=url)
 
 # 1:42 pm, Monday 23 May 2011 UTC
