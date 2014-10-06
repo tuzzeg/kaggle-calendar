@@ -28,7 +28,6 @@ class Command(object):
 
     conf = loadConfig(*args.configs)
 
-    print self._inner
     self._inner(command, args, conf)
 
 def main(commands):

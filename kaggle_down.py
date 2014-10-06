@@ -15,18 +15,12 @@ WEEK=7*24*HOUR
 
 def updateDownloads(conf):
   allCompetitionsUrl = conf.downloaderConfig.competitionsUrl
-  storage = FetchStorage(conf.downloaderConfig.storageFile)
+  storage = FetchStorage(conf.downloaderConfig.storageFile, fetchIntervalSec=1)
 
-  page = storage.get(allCompetitionsUrl, forceAfter=HOUR)
+  page = storage.get(allCompetitionsUrl, cachedTime=HOUR)
 
-  # we don't want to be banned by Kaggle, make 1 request per second
-  t0 = time.time()
   for c in extractCompetitions(page.contents):
-    while time.time()-t0 < downloadTimeoutSec:
-      time.sleep(0.1)
-
-    logger.debug('download [%s]' % c.url)
-    storage.get(c.url, forceAfter=WEEK)
+    storage.get(c.url, cachedTime=WEEK)
 
 def fetchAll(command, args, conf):
   updateDownloads(conf)
