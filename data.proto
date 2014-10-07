@@ -29,14 +29,23 @@ message FetchedPage {
   optional int64 timestamp = 3;
 }
 
+enum PageType {
+  COMPETITION = 1;
+}
+
 message Config {
   optional DownloaderConfig downloaderConfig = 1;
-  optional CalendarSyncerConfig syncerConfig = 2;
+  optional CalendarSyncerConfig calendarSyncerConfig = 2;
+  optional SqliteSyncerConfig sqliteSyncerConfig = 3;
 }
 
 message DownloaderConfig {
   optional string storageFile = 1;
   optional string competitionsUrl = 2;
+}
+
+message SqliteSyncerConfig {
+  optional string sqliteFile = 1;
 }
 
 message CalendarSyncerConfig {
