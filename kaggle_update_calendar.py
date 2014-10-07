@@ -1,52 +1,43 @@
-import argparse
-import sqlite3
-import base64
-import time
-import logging
-from google.protobuf import text_format
-
 from apiclient.discovery import build
 from apiclient.errors import HttpError
-from oauth2client.client import SignedJwtAssertionCredentials
-from oauth2client.file import Storage
-from oauth2client import tools
-
+from cmd import Command
 from data_pb2 import Competition, Date, CalendarSyncerConfig
-
+from files import readFile
+from functools import partial
+from oauth2client.client import SignedJwtAssertionCredentials
+import base64
+import cmd
 import httplib2
-# httplib2.debuglevel=4
+import logging
+import sqlite3
+import time
 
 logger = logging.getLogger(__name__)
 
-def main():
-  conf = _loadConf('d/conf.pb')
-
+def _sync(conf):
   syncer = CalendarSyncer(conf)
   syncer.authenticate()
-  syncer.syncEvents('d/kaggle.sqlite')
+  syncer.syncEvents(conf.sqliteSyncer.sqliteFile)
 
 class CalendarSyncer(object):
   def __init__(self, conf):
-    self.conf = conf
+    self.conf = conf.calendarSyncer
     self._service = None
 
   def authenticate(self):
-    conf = self.conf
-
-    with open(conf.authentication.serviceAccount.keysFile, 'rb') as f:
-      key = f.read()
+    conf = self.conf.authentication
 
     http = httplib2.Http()
 
     credentials = SignedJwtAssertionCredentials(
-      conf.authentication.serviceAccount.email,
-      key,
+      conf.serviceAccount.email,
+      readFile(conf.serviceAccount.keysFile),
       scope='https://www.googleapis.com/auth/calendar')
     http = credentials.authorize(http)
 
     self._service = build(
       serviceName='calendar', version='v3', http=http,
-      developerKey=conf.authentication.developersKey)
+      developerKey=conf.developersKey)
 
   def syncEvents(self, sqliteFile):
     with sqlite3.connect(sqliteFile) as cn:
@@ -66,11 +57,11 @@ class CalendarSyncer(object):
       if _match(competition, event):
         logger.debug('[%s] no upate' % (competition.id))
       else:
-        logger.debug('  [%s] update' % (competition.id))
+        logger.debug('[%s] update' % (competition.id))
         self._updateEvent(competition)
     except HttpError, e:
       if e.resp.status == 404:
-        logger.debug('  [%s] insert' % (competition.id))
+        logger.debug('[%s] insert' % (competition.id))
         self._addEvent(competition)
       else:
         raise e
@@ -109,15 +100,12 @@ def _jsonTime(dt):
       'dateTime': time.strftime('%Y-%m-%dT%H:%M:%S.000-00:00', time.gmtime(dt.timestamp_utc))
   }
 
-def _loadConf(confFile):
-  with open(confFile) as f:
-    s = f.read()
+def sync(command, args, conf):
+  _sync(conf)
 
-    conf = CalendarSyncerConfig()
-    text_format.Merge(s, conf)
-
-    return conf
+commands = {
+  'sync': partial(Command, sync)
+}
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.DEBUG)
-  main()
+  cmd.main(commands)
