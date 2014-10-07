@@ -1,9 +1,9 @@
+from protos import parseProtoText
+from files import readFile
 from data_pb2 import Config
-from google.protobuf import text_format
 
 def loadConfig(*files):
   conf = Config()
   for fileName in files:
-    with open(fileName) as f:
-      text_format.Merge(f.read(), conf)
+    conf = parseProtoText(readFile(fileName), conf)
   return conf

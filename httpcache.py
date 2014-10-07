@@ -1,20 +1,62 @@
-import time
-import urllib2
+from data_pb2 import FetchedPage
+from kyotocabinet import DB
+from protos import parseProto
 import email.utils
 import logging
 import random
-from kyotocabinet import DB
-from data_pb2 import FetchedPage
+import time
+import urllib2
 
 logger = logging.getLogger(__name__)
 
-class FetchStorage(object):
-  def __init__(self, fileName, fetchIntervalSec=1):
+def FetchStorage(fileName, fetchIntervalSec=1, readOnly=False):
+  if readOnly:
+    return FetchStorageRO(fileName)
+  else:
+    return FetchStorageRW(fileName, fetchIntervalSec)
+
+class Storage(object):
+  def __init__(self, fileName, mode):
     db = DB()
-    if not db.open(fileName, DB.OWRITER | DB.OCREATE):
+    if not db.open(fileName, mode):
       raise Exception, 'Could not open db, %s' % fileName
     self._db = db
 
+  def values(self):
+    cur = self._db.cursor()
+    cur.jump()
+    while True:
+      v = cur.get_value(True)
+      if not v: break
+      yield parseProto(v, FetchedPage())
+    cur.disable()
+
+  def close(self):
+    if not self._db is None:
+      self._db.close()
+      self._db = None
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, type, value, tb):
+    self.close()
+
+class FetchStorageRO(Storage):
+  def __init__(self, fileName, fetchIntervalSec=1):
+    super(FetchStorageRO, self).__init__(fileName, DB.OREADER)
+
+  def get(self, url, cachedTime=None):
+    storedBytes = self._db.get(url)
+
+    if storedBytes is None:
+      return None
+    else:
+      return parseProto(storedBytes, FetchedPage())
+
+class FetchStorageRW(Storage):
+  def __init__(self, fileName, fetchIntervalSec=1):
+    super(FetchStorageRW, self).__init__(fileName, DB.OWRITER | DB.OCREATE)
     self._rateLimit = RateLimit(fetchIntervalSec)
 
   def get(self, url, cachedTime=None):
@@ -49,17 +91,6 @@ class FetchStorage(object):
     page.contents = response.read()
     page.timestamp = int(time.time())
     return page
-
-  def close(self):
-    if not self._db is None:
-      self._db.close()
-      self._db = None
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, type, value, tb):
-    self.close()
 
 class RateLimit(object):
   def __init__(self, fetchIntervalSec=1):
