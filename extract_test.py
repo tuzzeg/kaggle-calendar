@@ -16,7 +16,7 @@ class ExtractorTest(unittest.TestCase):
 
   def test_extract_comp(self):
     html = readFile('test/comp_mdm.html')
-    c = Competition()
+    c = Competition(url='http://kaggle.com/c/mdm')
 
     updateCompetition(html, c)
 
@@ -35,7 +35,7 @@ class ExtractorTest(unittest.TestCase):
 
   def test_extract_overfitting(self):
     html = readFile('test/comp_overfitting.html')
-    c = Competition(id='/c/overfitting')
+    c = Competition(url='http://www.kaggle.com/c/overfitting')
 
     updateCompetition(html, c)
 
@@ -52,10 +52,11 @@ class ExtractorTest(unittest.TestCase):
 
   def test_extract_sentiment(self):
     html = readFile('test/comp_sentiment.html')
-    c = Competition(id='/c/sentiment-analysis-on-movie-reviews')
+    c = Competition(url='http://www.kaggle.com/c/sentiment-analysis-on-movie-reviews')
 
     updateCompetition(html, c)
 
+    self.assertEquals('/c/sentiment-analysis-on-movie-reviews', c.id)
     self.assertEquals('Sentiment Analysis on Movie Reviews', c.title)
     self.assertTrue(c.HasField('start'))
     self.assertTrue(c.HasField('end'))

@@ -55,11 +55,20 @@ def updateCompetition(html, competition):
   '''
   doc = BeautifulSoup(html)
 
+  _updateId(competition)
   _updateCompetitionTitle(doc, competition)
   _updateCompetitionDescription(doc, competition)
   _updateCompetitionDates(doc, competition)
   _updateCompetitionAttributes(doc, competition)
   _updateCompetitionLimited(doc, competition)
+
+def _updateId(competition):
+  url = urlparse.urlparse(competition.url)
+  host2 = '.'.join(url.netloc.rsplit('.', 2)[-2:])
+  if host2 == 'kaggle.com':
+    competition.id = url.path
+  else:
+    competition.id = '//%s/%s' % (host2, url.path)
 
 def _updateCompetitionTitle(doc, competition):
   el = doc.body.find('div', attrs={'id': 'comp-header-details'})
@@ -69,10 +78,6 @@ def _updateCompetitionTitle(doc, competition):
   if not el_h1:
     return
   competition.title = el_h1.text.strip()
-  el_h1_a = el_h1.find('a')
-  if not el_h1_a:
-    return
-  competition.id = el_h1_a['href']
 
 def _updateCompetitionDescription(doc, competition):
   el = doc.body.find('h1', attrs={'class': 'page-name'})
