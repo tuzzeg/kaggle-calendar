@@ -12,8 +12,8 @@ import urlparse
 logger = logging.getLogger(__name__)
 
 def _sync(conf):
-  storage = FetchStorage(conf.downloaderConfig.storageFile, readOnly=True)
-  sqliteFile = conf.sqliteSyncerConfig.sqliteFile
+  storage = FetchStorage(conf.downloader.storageFile, readOnly=True)
+  sqliteFile = conf.sqliteSyncer.sqliteFile
 
   pages = list(storage.values())
 

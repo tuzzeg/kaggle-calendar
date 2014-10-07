@@ -14,8 +14,8 @@ HOUR=3600
 WEEK=7*24*HOUR
 
 def updateDownloads(conf):
-  allCompetitionsUrl = conf.downloaderConfig.competitionsUrl
-  storage = FetchStorage(conf.downloaderConfig.storageFile, fetchIntervalSec=1)
+  allCompetitionsUrl = conf.downloader.competitionsUrl
+  storage = FetchStorage(conf.downloader.storageFile, fetchIntervalSec=1)
 
   page = storage.get(allCompetitionsUrl, cachedTime=HOUR)
 

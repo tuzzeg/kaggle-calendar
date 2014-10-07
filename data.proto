@@ -34,9 +34,9 @@ enum PageType {
 }
 
 message Config {
-  optional DownloaderConfig downloaderConfig = 1;
-  optional CalendarSyncerConfig calendarSyncerConfig = 2;
-  optional SqliteSyncerConfig sqliteSyncerConfig = 3;
+  optional DownloaderConfig downloader = 1;
+  optional CalendarSyncerConfig calendarSyncer = 2;
+  optional SqliteSyncerConfig sqliteSyncer = 3;
 }
 
 message DownloaderConfig {
