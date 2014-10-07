@@ -1,51 +1,67 @@
-import sqlite3
-import logging
-from httpcache import CachedHttp
+from cmd import Command
+from data_pb2 import Competition, COMPETITION
 from extract import extractCompetitions, updateCompetition
+from functools import partial
+from httpcache import FetchStorage
+from protos import parseProto
+import cmd
+import logging
+import sqlite3
+import urlparse
 
 logger = logging.getLogger(__name__)
 
-httpCache = 'd/html.kch'
+def _sync(conf):
+  storage = FetchStorage(conf.downloaderConfig.storageFile, readOnly=True)
+  sqliteFile = conf.sqliteSyncerConfig.sqliteFile
 
-allCompetitionsUrl = "http://www.kaggle.com/competitions/search?SearchVisibility=AllCompetitions&ShowActive=true&ShowCompleted=true&ShowProspect=true&ShowOpenToAll=true&ShowPrivate=true&ShowLimited=true"
-
-def updateSqlite(http, sqliteFile):
-  html = http.get(allCompetitionsUrl)
-  competitions = extractCompetitions(html)
+  pages = list(storage.values())
 
   with sqlite3.connect(sqliteFile) as cn:
     cn.execute('create table if not exists competitions (id string, title string, blob blob)')
-    for c in competitions:
-      if c.id.startswith('/c/'):
-        _updateCompetition(http.get(c.url), cn, c)
+    for page in pages:
+      pageType = _pageType(page)
+      logger.debug('[%s] pageType=%s' % (page.url, pageType))
+      if pageType == COMPETITION:
+        _updateCompetition(cn, page)
 
-def _updateCompetition(html, cn, competition):
-  updateCompetition(html, competition)
+def _pageType(page):
+  url = urlparse.urlparse(page.url)
+  if url.path.startswith('/c/') and len(url.query) == 0:
+    return COMPETITION
+  else:
+    return None
+
+def _updateCompetition(cn, page):
+  competition = Competition(url=page.url)
+  updateCompetition(page.contents, competition)
+
   rows = cn.execute('select id, title, blob from competitions where id == :id', {'id': competition.id})
   rows = list(rows)
   if len(rows) < 1:
-    logger.debug('  [%s] insert' % competition.id)
+    logger.debug('[%s] insert' % competition.id)
     cn.execute(
         'insert into competitions (id, title, blob) values (:id, :title, :blob)',
         {'id': competition.id, 'title': competition.title, 'blob': _blob(competition)})
   else:
     row = rows[0]
     if _blob(competition) != row[2]:
-      logger.debug('  [%s] update' % competition.id)
+      logger.debug('[%s] update' % competition.id)
       cn.execute(
           'update competitions set title=:title, blob=:blob where id=:id',
           {'id': competition.id, 'title': competition.title, 'blob': _blob(competition)})
     else:
-      logger.debug('  [%s] no change' % competition.id)
+      logger.debug('[%s] no change' % competition.id)
 
 def _blob(competition):
   return sqlite3.Binary(competition.SerializeToString())
 
-def main():
-  http = CachedHttp(httpCache)
-  sqliteFile = 'd/kaggle.sqlite'
-  updateSqlite(http, sqliteFile)
+def sync(command, args, conf):
+  _sync(conf)
+
+commands = {
+  'sync': partial(Command, sync)
+}
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.DEBUG)
-  main()
+  cmd.main(commands)
