@@ -16,10 +16,11 @@ class ExtractorTest(unittest.TestCase):
 
   def test_extract_comp(self):
     html = readFile('test/comp_mdm.html')
-    c = Competition(id='/c/mdm')
+    c = Competition()
 
     updateCompetition(html, c)
 
+    self.assertEquals('/c/mdm', c.id)
     self.assertEquals('Mapping Dark Matter', c.title)
     self.assertDate('Mon, 23 May 2011 13:42:00 +0000', c.start)
     self.assertDate('Thu, 18 Aug 2011 00:00:00 +0000', c.end)

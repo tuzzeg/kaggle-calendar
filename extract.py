@@ -69,6 +69,10 @@ def _updateCompetitionTitle(doc, competition):
   if not el_h1:
     return
   competition.title = el_h1.text.strip()
+  el_h1_a = el_h1.find('a')
+  if not el_h1_a:
+    return
+  competition.id = el_h1_a['href']
 
 def _updateCompetitionDescription(doc, competition):
   el = doc.body.find('h1', attrs={'class': 'page-name'})
