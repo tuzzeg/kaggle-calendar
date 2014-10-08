@@ -1,10 +1,10 @@
-from cmd import Command
 from data_pb2 import Competition, COMPETITION
 from extract import extractCompetitions, updateCompetition
 from functools import partial
 from httpcache import FetchStorage
-from protos import parseProto
-import cmd
+from lib import cmd
+from lib.cmd import Command
+from lib.protos import parseProto
 import logging
 import sqlite3
 import urlparse

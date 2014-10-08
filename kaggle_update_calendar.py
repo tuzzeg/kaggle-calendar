@@ -1,12 +1,12 @@
 from apiclient.discovery import build
 from apiclient.errors import HttpError
-from cmd import Command
 from data_pb2 import Competition, Date, CalendarSyncerConfig
-from files import readFile
 from functools import partial
+from lib import cmd
+from lib.cmd import Command
+from lib.files import readFile
 from oauth2client.client import SignedJwtAssertionCredentials
 import base64
-import cmd
 import httplib2
 import logging
 import sqlite3

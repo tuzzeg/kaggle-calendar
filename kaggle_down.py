@@ -1,8 +1,8 @@
-from cmd import Command
 from extract import extractCompetitions
-from httpcache import FetchStorage
 from functools import partial
-import cmd
+from httpcache import FetchStorage
+from lib import cmd
+from lib.cmd import Command
 import logging
 import time
 
