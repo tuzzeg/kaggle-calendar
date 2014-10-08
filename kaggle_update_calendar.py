@@ -97,7 +97,7 @@ def _eventId(competition):
 def _jsonTime(dt):
   return {
       # '2011-06-03T10:25:00.000-07:00'
-      'dateTime': time.strftime('%Y-%m-%dT%H:%M:%S.000-00:00', time.gmtime(dt.timestamp_utc))
+      'dateTime': time.strftime('%Y-%m-%dT%H:%M:%S.000-00:00', time.gmtime(dt.timestampUtc))
   }
 
 def sync(command, args, conf):

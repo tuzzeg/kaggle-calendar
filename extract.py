@@ -96,7 +96,7 @@ def _updateCompetitionAttributes(doc, competition):
 
   reward = re.findall('\$\\b([0-9,]+)\\b', attrs, re.I)
   if len(reward) == 1:
-    competition.reward_usd = int(reward[0].replace(',', ''))
+    competition.rewardUsd = int(reward[0].replace(',', ''))
   if re.search('(kudos|knowledge)', attrs, re.I):
     competition.attributes.append(Competition.KNOWLEDGE)
 
@@ -119,4 +119,4 @@ def _updateCompetitionDates(doc, competition):
     _setDate(competition.end, dates['ends'])
 
 def _setDate(proto, dt):
-  proto.timestamp_utc = calendar.timegm(dt.utctimetuple())
+  proto.timestampUtc = calendar.timegm(dt.utctimetuple())

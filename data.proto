@@ -15,11 +15,11 @@ message Competition {
   }
 
   repeated Attribute attributes = 7;
-  optional int32 reward_usd = 8;
+  optional int32 rewardUsd = 8;
 }
 
 message Date {
-  optional int64 timestamp_utc = 1;
+  optional int64 timestampUtc = 1;
 }
 
 // Fetched pages stored in HTTP storage

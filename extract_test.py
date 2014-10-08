@@ -31,7 +31,7 @@ class ExtractorTest(unittest.TestCase):
         'The prize is an expenses paid visit to the NASA Jet Propulsion ' +
         'Laboratory (JPL).', c.description)
     self.assertEquals(frozenset(), frozenset(c.attributes))
-    self.assertEquals(3000, c.reward_usd)
+    self.assertEquals(3000, c.rewardUsd)
 
   def test_extract_overfitting(self):
     html = readFile('test/comp_overfitting.html')
@@ -48,7 +48,7 @@ class ExtractorTest(unittest.TestCase):
         'what are the best techniques to avoid disaster?',
         c.description)
     self.assertEquals(frozenset(), frozenset(c.attributes))
-    self.assertEquals(500, c.reward_usd)
+    self.assertEquals(500, c.rewardUsd)
 
   def test_extract_sentiment(self):
     html = readFile('test/comp_sentiment.html')
@@ -67,7 +67,7 @@ class ExtractorTest(unittest.TestCase):
         'Classify the sentiment of sentences from the Rotten Tomatoes dataset',
         c.description)
     self.assertEquals(frozenset([Competition.KNOWLEDGE]), frozenset(c.attributes))
-    self.assertFalse(c.HasField('reward_usd'))
+    self.assertFalse(c.HasField('rewardUsd'))
 
   def test_extract_dates(self):
     dates = extractDates('''Started: 1:42 pm, Monday 23 May 2011 UTC
@@ -78,7 +78,7 @@ class ExtractorTest(unittest.TestCase):
     self.assertEqual([('started', datetime(2011, 5, 23, 13, 42)), ('ended', datetime(2011, 8, 18, 0, 0))], dates)
 
   def assertDate(self, dateStr, dt):
-    dtStr = time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime(dt.timestamp_utc))
+    dtStr = time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime(dt.timestampUtc))
     self.assertEquals(dateStr, dtStr)
 
 def readFile(fileName):
