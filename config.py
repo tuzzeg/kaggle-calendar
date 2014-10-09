@@ -1,5 +1,5 @@
-from protos import parseProtoText
-from files import readFile
+from lib.protos import parseProtoText
+from lib.files import readFile
 from data_pb2 import Config
 
 def loadConfig(*files):

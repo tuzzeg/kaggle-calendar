@@ -1,6 +1,6 @@
 from data_pb2 import FetchedPage
 from kyotocabinet import DB
-from protos import parseProto
+from lib.protos import parseProto
 import email.utils
 import logging
 import random
