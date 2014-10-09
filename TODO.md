@@ -17,3 +17,6 @@
 
 [2014-10-08]
 - Updaters (sqlite, calendar): update only competitions changed since last sync
+- Log updated/added/unmodified
+- Save logs in file, logrotate/gzip
+- Merge `kaggle_*.py` into one script
