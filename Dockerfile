@@ -1,18 +1,26 @@
 FROM dockerfile/python
 
-RUN \
-  apt-get update && \
-  apt-get install -y libkyotocabinet-dev protobuf-compiler
+ENV KYOTOCABINET_VER 1.18
+ENV KYOTOCABINET_TGZ kyotocabinet-python-legacy-${KYOTOCABINET_VER}
+
+RUN apt-get update && apt-get install -y \
+  libkyotocabinet-dev
 
 RUN virtualenv /env
-RUN /env/bin/pip install beautifulsoup4 protobuf google-api-python-client
+RUN /env/bin/pip install \
+  beautifulsoup4 \
+  protobuf \
+  google-api-python-client
+
+ENV TMP_KYOTOCABINET /tmp-kyotocabinet
 
 RUN \
-  wget http://fallabs.com/kyotocabinet/pythonlegacypkg/kyotocabinet-python-legacy-1.18.tar.gz && \
-  tar -xzvf kyotocabinet-python-legacy-1.18.tar.gz
-WORKDIR kyotocabinet-python-legacy-1.18
-RUN /env/bin/python setup.py build
-RUN /env/bin/python setup.py install
+  mkdir -p ${TMP_KYOTOCABINET} && \
+  curl -SL http://fallabs.com/kyotocabinet/pythonlegacypkg/${KYOTOCABINET_TGZ}.tar.gz | tar xz --strip-components=1 -C ${TMP_KYOTOCABINET} && \
+  cd ${TMP_KYOTOCABINET} && \
+  /env/bin/python setup.py build && \
+  /env/bin/python setup.py install && \
+  rm -rf ${TMP_KYOTOCABINET}
 
 ADD . /app
 
