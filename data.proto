@@ -65,5 +65,7 @@ message CalendarSyncerConfig {
   }
 
   optional Authentication authentication = 1;
-  optional Target target = 2;
+  optional Target targetAll = 2;
+  optional Target targetInMoney = 3;
+  optional Target targetKnowledge = 4;
 }

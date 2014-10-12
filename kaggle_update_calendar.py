@@ -40,17 +40,23 @@ class CalendarSyncer(object):
       developerKey=conf.developersKey)
 
   def syncEvents(self, sqliteFile):
+    calendars = {
+      _all: self.conf.targetAll.calendarId,
+      _inMoney: self.conf.targetInMoney.calendarId,
+      _knowledge: self.conf.targetKnowledge.calendarId,
+    }
+
     with sqlite3.connect(sqliteFile) as cn:
       rows = cn.execute('select id, blob from competitions')
       for id, blob in rows:
         c = Competition()
         c.ParseFromString(blob)
 
-        self._syncCompetition(c)
+        for predicate, calendarId in calendars.items():
+          if predicate(c):
+            self._syncCompetition(calendarId, c)
 
-  def _syncCompetition(self, competition):
-    calendarId = self.conf.target.calendarId
-
+  def _syncCompetition(self, calendarId, competition):
     eventId = _eventId(competition)
     try:
       event = self._service.events().get(calendarId=calendarId, eventId=eventId).execute()
@@ -58,21 +64,21 @@ class CalendarSyncer(object):
         logger.debug('[%s] no upate' % (competition.id))
       else:
         logger.debug('[%s] update' % (competition.id))
-        self._updateEvent(competition)
+        self._updateEvent(calendarId, competition)
     except HttpError, e:
       if e.resp.status == 404:
         logger.debug('[%s] insert' % (competition.id))
-        self._addEvent(competition)
+        self._addEvent(calendarId, competition)
       else:
         raise e
 
-  def _addEvent(self, competition):
+  def _addEvent(self, calendarId, competition):
     event = _event(competition)
-    ev = self._service.events().insert(calendarId=self.conf.target.calendarId, body=event).execute()
+    ev = self._service.events().insert(calendarId=calendarId, body=event).execute()
 
-  def _updateEvent(self, competition):
+  def _updateEvent(self, calendarId, competition):
     event = _event(competition)
-    ev = self._service.events().update(calendarId=self.conf.target.calendarId, eventId=event['id'], body=event).execute()
+    ev = self._service.events().update(calendarId=calendarId, eventId=event['id'], body=event).execute()
 
 def _match(competition, event):
   return _event(competition) == event
@@ -99,6 +105,15 @@ def _jsonTime(dt):
       # '2011-06-03T10:25:00.000-07:00'
       'dateTime': time.strftime('%Y-%m-%dT%H:%M:%S.000-00:00', time.gmtime(dt.timestampUtc))
   }
+
+def _all(competition):
+  return True
+
+def _inMoney(competition):
+  return competition.HasField('rewardUsd')
+
+def _knowledge(competition):
+  return Competition.KNOWLEDGE in competition.attributes
 
 def sync(command, args, conf):
   _sync(conf)
