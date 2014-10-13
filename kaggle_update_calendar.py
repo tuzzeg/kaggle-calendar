@@ -14,10 +14,15 @@ import time
 
 logger = logging.getLogger(__name__)
 
-def _sync(conf):
+def _sync(conf, id=None):
+  if id is None:
+    competitionF = lambda competition: True
+  else:
+    competitionF = lambda competition: competition.id == id
+
   syncer = CalendarSyncer(conf)
   syncer.authenticate()
-  syncer.syncEvents(conf.sqliteSyncer.sqliteFile)
+  syncer.syncEvents(conf.sqliteSyncer.sqliteFile, competitionF)
 
 class CalendarSyncer(object):
   def __init__(self, conf):
@@ -39,7 +44,7 @@ class CalendarSyncer(object):
       serviceName='calendar', version='v3', http=http,
       developerKey=conf.developersKey)
 
-  def syncEvents(self, sqliteFile):
+  def syncEvents(self, sqliteFile, competitionF):
     calendars = {
       _all: self.conf.targetAll.calendarId,
       _inMoney: self.conf.targetInMoney.calendarId,
@@ -52,9 +57,10 @@ class CalendarSyncer(object):
         c = Competition()
         c.ParseFromString(blob)
 
-        for predicate, calendarId in calendars.items():
-          if predicate(c):
-            self._syncCompetition(calendarId, c)
+        if competitionF(c):
+          for predicate, calendarId in calendars.items():
+            if predicate(c):
+              self._syncCompetition(calendarId, c)
 
   def _syncCompetition(self, calendarId, competition):
     eventId = _eventId(competition)
@@ -87,7 +93,7 @@ def _event(competition):
   event = {
     'id': _eventId(competition),
     'summary': competition.title,
-    'description': competition.description,
+    'description': '<a href="%s">%s</a>' % (competition.url, competition.description),
     'start': _jsonTime(competition.start),
     'end': _jsonTime(competition.end),
     'source': {
@@ -115,11 +121,19 @@ def _inMoney(competition):
 def _knowledge(competition):
   return Competition.KNOWLEDGE in competition.attributes
 
-def sync(command, args, conf):
+def syncAll(command, args, conf):
   _sync(conf)
 
+class Sync(object):
+  def argparser(self, p):
+    p.add_argument('--event-id', type=str)
+
+  def __call__(self, command, args, conf):
+    _sync(conf, id=args.event_id)
+
 commands = {
-  'sync': partial(Command, sync)
+  'sync-all': partial(Command, syncAll),
+  'sync': partial(Command, Sync())
 }
 
 if __name__ == '__main__':
