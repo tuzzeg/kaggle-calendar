@@ -1,11 +1,10 @@
-from apiclient.discovery import build
-from apiclient.errors import HttpError
 from data_pb2 import Competition, Date, CalendarSyncerConfig
 from functools import partial
 from lib import cmd
 from lib.cmd import Command
 from lib.files import readFile
 from oauth2client.client import SignedJwtAssertionCredentials
+import apiclient
 import base64
 import httplib2
 import logging
@@ -40,7 +39,7 @@ class CalendarSyncer(object):
       scope='https://www.googleapis.com/auth/calendar')
     http = credentials.authorize(http)
 
-    self._service = build(
+    self._service = apiclient.discovery.build(
       serviceName='calendar', version='v3', http=http,
       developerKey=conf.developersKey)
 
@@ -71,7 +70,7 @@ class CalendarSyncer(object):
       else:
         logger.debug('[%s] update' % (competition.id))
         self._updateEvent(calendarId, competition)
-    except HttpError, e:
+    except apiclient.errors.HttpError, e:
       if e.resp.status == 404:
         logger.debug('[%s] insert' % (competition.id))
         self._addEvent(calendarId, competition)

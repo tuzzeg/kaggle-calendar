@@ -1,9 +1,11 @@
 from config import loadConfig
 import argparse
+import httplib2
 import logging
+import logging.config
 import sys
 import urllib2
-import httplib2
+import json
 
 class Command(object):
   def __init__(self, inner):
@@ -11,6 +13,7 @@ class Command(object):
 
   def argparser(self, p):
     p.add_argument('-c', '--configs', nargs='+')
+    p.add_argument('--log-config', type=str, default=None)
     p.add_argument('--log-level', type=str, default='WARNING')
     p.add_argument('--log-http', type=bool, default=False)
     p.add_argument('--log-http-debuglevel', type=int, default=None)
@@ -18,10 +21,14 @@ class Command(object):
       self._inner.argparser(p)
 
   def __call__(self, command, args):
-    logLevel = getattr(logging, args.log_level.upper(), None)
-    if not isinstance(logLevel, int):
-      raise ValueError('Invalid log level: %s' % args.log_level)
-    logging.basicConfig(level=logLevel)
+    if args.log_config:
+      with open(args.log_config) as f:
+        logging.config.dictConfig(json.load(f))
+    else:
+      logLevel = getattr(logging, args.log_level.upper(), None)
+      if not isinstance(logLevel, int):
+        raise ValueError('Invalid log level: %s' % args.log_level)
+      logging.basicConfig(level=logLevel)
 
     if args.log_http:
       http_logger = urllib2.HTTPHandler(debuglevel = 1)

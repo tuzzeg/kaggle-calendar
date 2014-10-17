@@ -19,8 +19,16 @@ def updateDownloads(conf):
 
   page = storage.get(allCompetitionsUrl, cachedTime=HOUR)
 
+  t0 = time.time()
+  updated, cached = 0, 0
   for c in extractCompetitions(page.contents):
-    storage.get(c.url, cachedTime=WEEK)
+    page = storage.get(c.url, cachedTime=WEEK)
+    if t0 <= page.timestamp:
+      updated += 1
+    else:
+      cached += 1
+
+  logger.info('updated=%d cached=%d' % (updated, cached))
 
 def fetchAll(command, args, conf):
   updateDownloads(conf)

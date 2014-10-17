@@ -17,13 +17,20 @@ def _sync(conf):
 
   pages = list(storage.values())
 
+  changes = dict()
   with sqlite3.connect(sqliteFile) as cn:
     cn.execute('create table if not exists competitions (id string, title string, blob blob)')
     for page in pages:
       pageType = _pageType(page)
       logger.debug('[%s] pageType=%s' % (page.url, pageType))
       if pageType == COMPETITION:
-        _updateCompetition(cn, page)
+        changeType = _updateCompetition(cn, page)
+        changes[changeType] = changes.get(changeType, 0) + 1
+
+  inserted = changes.get('insert', 0)
+  updated = changes.get('update', 0)
+  unchanged = changes.get('nochange', 0)
+  logger.info('inserted=%d updated=%d untouched=%d' % (inserted, updated, unchanged))
 
 def _pageType(page):
   url = urlparse.urlparse(page.url)
@@ -43,6 +50,7 @@ def _updateCompetition(cn, page):
     cn.execute(
         'insert into competitions (id, title, blob) values (:id, :title, :blob)',
         {'id': competition.id, 'title': competition.title, 'blob': _blob(competition)})
+    return 'insert'
   else:
     row = rows[0]
     if _blob(competition) != row[2]:
@@ -50,8 +58,10 @@ def _updateCompetition(cn, page):
       cn.execute(
           'update competitions set title=:title, blob=:blob where id=:id',
           {'id': competition.id, 'title': competition.title, 'blob': _blob(competition)})
+      return 'update'
     else:
       logger.debug('[%s] no change' % competition.id)
+      return 'nochange'
 
 def _blob(competition):
   return sqlite3.Binary(competition.SerializeToString())
