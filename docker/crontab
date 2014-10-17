@@ -1,0 +1,3 @@
+0 1 * * * /app/r.sh fetch
+0 2 * * * /app/r.sh sync-sqlite
+0 3 * * * /app/r.sh sync-calendar
