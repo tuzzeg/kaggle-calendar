@@ -17,5 +17,9 @@
   "root": {
     "level": "INFO",
     "handlers": ["file"]
+  },
+  "googleapiclient.discovery": {
+    "level": "INFO",
+    "handlers": ["file"]
   }
 }
