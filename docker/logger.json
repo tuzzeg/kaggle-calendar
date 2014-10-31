@@ -19,7 +19,7 @@
     "handlers": ["file"]
   },
   "googleapiclient.discovery": {
-    "level": "INFO",
+    "level": "ERROR",
     "handlers": ["file"]
   }
 }
