@@ -20,3 +20,8 @@
 - Log updated/added/unmodified
 - Save logs in file, logrotate/gzip
 - Merge `kaggle_*.py` into one script
+
+[2014-10-20]
+- Post about new Kaggle competitions
+  - to email list
+- Better visualization of KaggleCompetition (timeline)
