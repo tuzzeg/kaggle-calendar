@@ -34,9 +34,18 @@ enum PageType {
 }
 
 message Config {
+  optional AuthConfig auth = 4;
+
   optional DownloaderConfig downloader = 1;
   optional CalendarSyncerConfig calendarSyncer = 2;
   optional SqliteSyncerConfig sqliteSyncer = 3;
+}
+
+message AuthConfig {
+  optional string client_id = 1;
+  optional string client_secret = 2;
+  optional string redirect_uri = 3;
+  optional string refresh_token = 4;
 }
 
 message DownloaderConfig {
