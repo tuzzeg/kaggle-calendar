@@ -13,6 +13,7 @@ import httplib2
 import logging
 import sqlite3
 import time
+from oauth import oauthSession
 
 logger = logging.getLogger(__name__)
 
@@ -31,47 +32,41 @@ def email(command, args, conf):
     return
 
   sender = EmailSender(conf)
-  sender.authenticate()
 
   emails = 0
   for c in competitions:
     sender.email(c)
     emails += 1
 
-    sqliteStorage.log(category='email', value=_timestampToString(c.start.timestampUtc))
+    # sqliteStorage.log(category='email', value=_timestampToString(c.start.timestampUtc))
 
   logger.info('email, sent=%d' % (emails))
 
 class EmailSender(object):
   def __init__(self, conf):
     self.conf = conf
-    self._service = None
 
-  def authenticate(self):
-    conf = self.conf.calendarSyncer.authentication
+    scope = [
+      'https://www.googleapis.com/auth/gmail.compose',
+    ]
+    self.google = oauthSession(conf, scope)
 
-    http = httplib2.Http()
-
-    credentials = SignedJwtAssertionCredentials(
-      conf.serviceAccount.email,
-      readFile(conf.serviceAccount.keysFile),
-      scope='https://www.googleapis.com/auth/gmail.compose')
-    http = credentials.authorize(http)
-
-    self._service = apiclient.discovery.build(
-      serviceName='gmail', version='v1', http=http,
-      developerKey=conf.developersKey)
-
-  def email(competition):
-    message = _message(competition)
-    print self._service.users().messages().send(userId='kaggle-calendar@gmail.com', body=message).execute()
+  def email(self, competition):
+    _message(competition)
+    headers = {'Content-Type':  'application/json'}
+    self.google.post(
+      'https://www.googleapis.com/gmail/v1/users/me/messages/send',
+      data={'raw': _message(competition)},
+      params={'uploadType': 'media'},
+      headers=headers,
+    )
 
 def _message(competition):
   message = MIMEText(competition.description)
   message['to'] = 'deemonster@gmail.com'
   message['from'] = 'kaggle-calendar@gmail.com'
   message['subject'] = competition.title
-  return {'raw': base64.urlsafe_b64encode(message.as_string())}
+  return base64.urlsafe_b64encode(message.as_string())
 
 class SqliteStorage():
   def __init__(self, sqliteFile):
