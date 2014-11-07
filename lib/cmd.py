@@ -1,6 +1,5 @@
 from config import loadConfig
 import argparse
-import httplib2
 import logging
 import logging.config
 import sys
@@ -16,7 +15,6 @@ class Command(object):
     p.add_argument('--log-config', type=str, default=None)
     p.add_argument('--log-level', type=str, default='WARNING')
     p.add_argument('--log-http', type=bool, default=False)
-    p.add_argument('--log-http-debuglevel', type=int, default=None)
     if hasattr(self._inner, 'argparser'):
       self._inner.argparser(p)
 
@@ -34,9 +32,6 @@ class Command(object):
       http_logger = urllib2.HTTPHandler(debuglevel = 1)
       opener = urllib2.build_opener(http_logger) # put your other handlers here too!
       urllib2.install_opener(opener)
-
-    if args.log_http_debuglevel:
-      httplib2.debuglevel = args.log_http_debuglevel
 
     conf = loadConfig(*args.configs)
 
