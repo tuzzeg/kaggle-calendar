@@ -1,15 +1,12 @@
-from data_pb2 import Competition, Date, CalendarSyncerConfig
+from data_pb2 import Competition, Date
 from email.mime.text import MIMEText
 from functools import partial
 from itertools import islice
 from lib import cmd
 from lib.cmd import Command
 from lib.files import readFile
-from oauth2client.client import SignedJwtAssertionCredentials
-import apiclient
 import base64
 import calendar
-import httplib2
 import logging
 import sqlite3
 import time
