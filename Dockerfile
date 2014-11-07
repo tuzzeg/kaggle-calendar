@@ -19,7 +19,8 @@ RUN virtualenv /env
 RUN /env/bin/pip install \
   beautifulsoup4 \
   protobuf \
-  google-api-python-client \
+  oauthlib \
+  requests-oauthlib \
   pycrypto
 
 # Install Python bindings to KyotoCabinet
