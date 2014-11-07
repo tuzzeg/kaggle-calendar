@@ -58,22 +58,11 @@ message SqliteSyncerConfig {
 }
 
 message CalendarSyncerConfig {
-  message ServiceAccount {
-    optional string email = 1;
-    optional string keysFile = 2;
-  }
-
-  message Authentication {
-    optional string developersKey = 1;
-    optional ServiceAccount serviceAccount = 2;
-  }
-
   message Target {
     optional string email = 1;
     optional string calendarId = 2;
   }
 
-  optional Authentication authentication = 1;
   optional Target targetAll = 2;
   optional Target targetInMoney = 3;
   optional Target targetKnowledge = 4;
