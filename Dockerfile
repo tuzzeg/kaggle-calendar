@@ -1,7 +1,5 @@
 FROM phusion/baseimage:0.9.15
 
-VOLUME ["/logs"]
-
 ENV HOME /root
 
 # Install
@@ -20,8 +18,7 @@ RUN /env/bin/pip install \
   beautifulsoup4 \
   protobuf \
   oauthlib \
-  requests-oauthlib \
-  pycrypto
+  requests-oauthlib
 
 # Install Python bindings to KyotoCabinet
 ENV KYOTOCABINET_VER 1.18
@@ -46,5 +43,7 @@ RUN \
   chmod 700 /app/r.sh
 
 ENV PYTHONPATH /app:/app/gen
+
+VOLUME ["/app/d"]
 
 CMD ["/sbin/my_init"]
