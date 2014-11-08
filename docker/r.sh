@@ -17,6 +17,9 @@ sync-sqlite)
 sync-calendar)
   $py kaggle_update_calendar.py sync-all -c d/conf.pb --log-config=logger.json
   ;;
+send-email)
+  $py kaggle_send_email.py email -c d/conf.pb --log-config=logger.json
+  ;;
 *)
   echo "Usage: $0 {fetch|sync-calendar|sync-calendar}"
   exit 1
