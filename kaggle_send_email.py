@@ -11,6 +11,7 @@ import logging
 import sqlite3
 import time
 from oauth import oauthSession
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ def email(command, args, conf):
     sender.email(c)
     emails += 1
 
-    # sqliteStorage.log(category='email', value=_timestampToString(c.start.timestampUtc))
+    sqliteStorage.log(category='email', value=_timestampToString(c.start.timestampUtc))
 
   logger.info('email, sent=%d' % (emails))
 
@@ -49,18 +50,32 @@ class EmailSender(object):
     self.google = oauthSession(conf, scope)
 
   def email(self, competition):
-    _message(competition)
     headers = {'Content-Type':  'application/json'}
     self.google.post(
       'https://www.googleapis.com/gmail/v1/users/me/messages/send',
-      data={'raw': _message(competition)},
-      params={'uploadType': 'media'},
+      data=json.dumps({'raw': _message(competition, self.conf.sendEmail.destination)}),
       headers=headers,
-    )
+    ).raise_for_status()
 
-def _message(competition):
-  message = MIMEText(competition.description)
-  message['to'] = 'deemonster@gmail.com'
+def _message(competition, destEmail):
+  body = '''New competition: %(title)s
+
+%(description)s
+
+Starts: %(start)s
+Ends: %(end)s
+
+%(url)s
+'''
+  body = body % {
+    'title': competition.title,
+    'description': competition.description,
+    'url': competition.url,
+    'start': _formatDate(competition.start.timestampUtc),
+    'end': _formatDate(competition.end.timestampUtc),
+  }
+  message = MIMEText(body, 'plain')
+  message['to'] = destEmail
   message['from'] = 'kaggle-calendar@gmail.com'
   message['subject'] = competition.title
   return base64.urlsafe_b64encode(message.as_string())
@@ -116,6 +131,9 @@ def _timestampFromString(s):
 
 def _timestampToString(ts):
   return time.strftime('%Y-%m-%dT%H:%M:%S.000-00:00', time.gmtime(ts))
+
+def _formatDate(ts):
+  return time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(ts))
 
 commands = {
   'email': partial(Command, email),

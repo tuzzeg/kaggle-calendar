@@ -39,6 +39,7 @@ message Config {
   optional DownloaderConfig downloader = 1;
   optional CalendarSyncerConfig calendarSyncer = 2;
   optional SqliteSyncerConfig sqliteSyncer = 3;
+  optional SendEmailConfig sendEmail = 5;
 }
 
 message AuthConfig {
@@ -66,4 +67,8 @@ message CalendarSyncerConfig {
   optional Target targetAll = 2;
   optional Target targetInMoney = 3;
   optional Target targetKnowledge = 4;
+}
+
+message SendEmailConfig {
+  optional string destination = 1;
 }
